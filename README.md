@@ -10,13 +10,46 @@ Beyond Binary shifts the power dynamic from employers to talent — surfacing AI
 
 ## Table of Contents
 
+- [Vision & Mission](#vision--mission)
 - [What It Does](#what-it-does)
+- [Target Users](#target-users)
 - [Features](#features)
+  - [Safe-Flex Score System](#safe-flex-score-system)
+  - [Job Board](#job-board)
+  - [Shield Protocol](#shield-protocol)
+  - [Flex-Match](#flex-match)
+  - [Amplify Portfolio](#amplify-portfolio)
+  - [Lumina Benefits Wallet](#lumina-benefits-wallet)
+- [Authentication & User Accounts](#authentication--user-accounts)
 - [Tech Stack](#tech-stack)
 - [Project Structure](#project-structure)
 - [Getting Started](#getting-started)
 - [Architecture](#architecture)
-- [Product Requirements Document](#product-requirements-document)
+- [Backend & Data](#backend--data)
+- [Non-Functional Requirements](#non-functional-requirements)
+- [Out of Scope (v1.0)](#out-of-scope-v10)
+- [Roadmap](#roadmap)
+- [Success Metrics](#success-metrics)
+- [Open Questions](#open-questions)
+- [Contributing](#contributing)
+- [License](#license)
+
+---
+
+## Vision & Mission
+
+### Vision
+
+Beyond Binary is a career intelligence and empowerment platform built for female professionals in Singapore. It shifts the power dynamic from employers to talent by surfacing data-driven workplace safety metrics, anonymous incident reporting, job-sharing opportunities, and financial clarity tools — all in one cohesive experience.
+
+### Mission
+
+To eliminate information asymmetry in the labor market for women by providing the data, tools, and community infrastructure they need to make informed career decisions and hold employers accountable.
+
+### Strategic Alignment
+
+- **SDG 5** — Gender Equality
+- **SDG 8** — Decent Work and Economic Growth
 
 ---
 
@@ -32,9 +65,26 @@ The Singapore labor market creates structural information asymmetry for women �
 
 ---
 
+## Target Users
+
+| Segment | Description | Primary Pain Point |
+|---|---|---|
+| Active Job Seekers | Women actively searching for new roles | Can't assess workplace culture before joining |
+| Career Returners | Women re-entering the workforce after caregiving gaps | Resume gaps stigmatized; undervalued experience |
+| Job Sharers | Professionals seeking reduced-hours senior roles | Senior positions incompatible with caregiving |
+| Incident Reporters | Women who have experienced workplace misconduct | Fear of retaliation prevents reporting |
+| Employers (future) | Companies seeking to improve gender equity scores | No objective benchmark for culture improvement |
+
+---
+
 ## Features
 
 ### Safe-Flex Score System
+
+**What it does:** Assigns every job listing two AI-derived scores — a Safety Score (workplace culture, psychological safety) and a Flexibility Score (work-life balance, hybrid/remote arrangements).
+
+**User Story:** As a job seeker, I want to see a workplace safety and flexibility rating on every job card so I can filter out toxic environments before applying.
+
 Every job listing receives two scores (0–100) computed by AI:
 
 | Score | What it measures |
@@ -42,22 +92,47 @@ Every job listing receives two scores (0–100) computed by AI:
 | **Safety Score** | Workplace culture, psychological safety, absence of red flags |
 | **Flexibility Score** | Hybrid/remote options, part-time availability, caregiving-friendly policies |
 
-Scores are derived from NLP analysis of job descriptions, aggregated reviews, and verified incident reports. Red flags (e.g., "Maternity leave friction") and green flags (e.g., "4-day week pilot") are surfaced directly on each listing.
+**Requirements:**
+- Safety Score (0–100) and Flexibility Score (0–100) displayed on all job cards
+- Score breakdown page showing contributing factors (red flags, green flags)
+- Scoring methodology powered by NLP analysis of job descriptions, Glassdoor-equivalent reviews, and reported incidents
+- Red flags: e.g., "Maternity leave friction," "No hybrid options"
+- Green flags: e.g., "Mentorship for women," "4-day week pilot"
+- Score recalculates when new Shield Protocol reports are filed against a company
+
+**Acceptance Criteria:**
+- [ ] Scores visible on job card list view and job detail view
+- [ ] Score breakdown accessible from job detail
+- [ ] Scores update within 24h of new verified incident reports
 
 ---
 
 ### Job Board
-A curated job marketplace with Safe-Flex scores embedded on every card.
 
-- Search by keyword, company, or role
-- Filter by Safety Score, Flexibility Score, industry, location, and salary range
-- Job detail view: full description, score breakdown, red/green flag chips, and apply button
-- Apply links integrate with company ATS or direct URL
+**What it does:** A curated job marketplace with Safe-Flex scores embedded on every listing.
+
+**User Story:** As a job seeker, I want to search and filter jobs by safety score, flexibility score, role type, and industry so I can find opportunities that fit my values and needs.
+
+**Requirements:**
+- Search by keyword, company, role type
+- Filter by Safety Score threshold, Flexibility Score threshold, industry, location, salary range
+- Job cards show: title, company, location, salary range, Safe-Flex scores, posted date
+- Job detail page shows: full description, score breakdown, red/green flags, apply button
+- "Apply" integrates with company ATS or external link
+
+**Acceptance Criteria:**
+- [ ] Search returns results within 500ms
+- [ ] Filters can be combined and persisted across sessions
+- [ ] Job detail renders red/green flag chips
+- [ ] Apply CTA tracks click events for analytics
 
 ---
 
 ### Shield Protocol
-A private, zero-knowledge incident reporting system built for women who have experienced workplace misconduct.
+
+**What it does:** A private, zero-knowledge incident reporting system built for women who have experienced workplace misconduct — and triggers collective action when multiple reports converge on the same actor.
+
+**User Story:** As a user who experienced harassment at work, I want to file a confidential report that can contribute to collective action against repeat offenders, without my identity being exposed.
 
 **How it works:**
 1. Reporter verifies identity via **Singpass** (Singapore national ID) — confirming they are a real person
@@ -69,21 +144,52 @@ A private, zero-knowledge incident reporting system built for women who have exp
 
 Reporters receive an anonymous case ID for follow-up tracking. The platform cannot link a report to its author.
 
+**Requirements:**
+- Singpass-verified anonymous identity (Singapore national ID confirmation, no stored PII)
+- Zero-knowledge proof encryption so the platform cannot identify the reporter
+- Reports captured: company, department, manager/actor (optional), incident category, description, date
+- Collective action trigger: ≥3 verified reports on the same manager or department within 90 days
+- Collective action surfaces on the company's Safe-Flex score
+- Immutable incident ledger (append-only, cryptographically sealed)
+- Dashboard showing: total reports filed, collective actions triggered, companies flagged
+- Reporter receives anonymous case ID for follow-up
+
+**Acceptance Criteria:**
+- [ ] No PII stored post-verification
+- [ ] Report submission is end-to-end encrypted
+- [ ] Collective action threshold logic is tested and auditable
+- [ ] Reporter dashboard allows status tracking by case ID only
+- [ ] Flagged companies see Safe-Flex Safety Score reduced accordingly
+
 ---
 
 ### Flex-Match
-A job-sharing platform that pairs two professionals with complementary skills to jointly fill a single senior role.
 
-- Create a profile with skills, availability, timezone, and caregiving context
-- AI matching ranks partners by complementary skill coverage and schedule compatibility
-- Schedule coordination view highlights handover windows and coverage gaps
-- Joint application package exported as PDF for employer submission
-- In-platform messaging between matched partners
+**What it does:** A job-sharing matching platform that pairs two professionals with complementary skills so they can jointly fill a single senior role, enabling access to high-responsibility positions on a part-time basis.
+
+**User Story:** As a senior professional with caregiving responsibilities, I want to find a job-share partner so I can apply for senior roles that would otherwise be incompatible with my schedule.
+
+**Requirements:**
+- Profile creation: skills, experience level, availability (days/hours), timezone, caregiving context (optional)
+- AI matching algorithm: complementary skills weighting, schedule compatibility, timezone overlap
+- Partner discovery: browse suggested matches with compatibility score
+- Schedule coordination tools: handover notes, shared calendar view
+- Employer-facing view: joint application package for both partners
+- Messaging between matched partners
+
+**Acceptance Criteria:**
+- [ ] Profile creation takes <5 minutes
+- [ ] Matching returns top 5 candidates ranked by compatibility score
+- [ ] Schedule view highlights overlaps and gaps
+- [ ] Joint application package exportable as PDF
 
 ---
 
 ### Amplify Portfolio
-An AI-powered career narrative tool for women returning from caregiving breaks or non-traditional career paths.
+
+**What it does:** An AI-powered career narrative tool that transforms caregiving gaps and non-traditional experience into corporate-valued language for CVs and LinkedIn profiles.
+
+**User Story:** As a career returner, I want to convert my caregiving experience into professional language so I can present a competitive resume without hiding the gap.
 
 **Example transformations:**
 
@@ -92,16 +198,27 @@ An AI-powered career narrative tool for women returning from caregiving breaks o
 | "Raised two children" | "Managed multi-stakeholder household operations and long-range developmental planning for two individuals" |
 | "Volunteered at school" | "Led community engagement initiatives and coordinated cross-functional teams of 15+" |
 
-Features:
-- Dual-view toggle: **Candidate perspective** (authentic voice) vs. **Recruiter perspective** (corporate language)
-- Auto-extracted skills tags (editable)
-- Export as PDF or copy to clipboard
-- Interview request tracker tied to each portfolio version
+**Requirements:**
+- Input: raw experience entries (free text or structured: role, duration, activities)
+- AI transformation: maps caregiving activities to transferable skills and corporate-recognized language
+- Dual view: Candidate perspective (authentic) / Recruiter perspective (translated)
+- Skills extraction: auto-identify skills from transformed experience
+- Export: download as PDF or copy to clipboard
+- Interview request tracker: log inbound interest tied to portfolio version
+
+**Acceptance Criteria:**
+- [ ] Transformation API returns result within 3 seconds
+- [ ] Dual-view toggle renders both perspectives without layout shift
+- [ ] Exported PDF matches on-screen layout
+- [ ] Skills tags are editable by the user
 
 ---
 
 ### Lumina Benefits Wallet
-A financial visualization tool that computes **Total Professional Worth** — not just base salary.
+
+**What it does:** A financial visualization tool that calculates a user's Total Professional Worth — combining base salary, government subsidies, flexibility-derived value recovery, and gender pay gap context.
+
+**User Story:** As a professional evaluating a job offer, I want to see the full financial picture including subsidies and flexibility value so I can compare offers accurately.
 
 **Inputs (interactive sliders):**
 - Base salary
@@ -116,7 +233,36 @@ A financial visualization tool that computes **Total Professional Worth** — no
 - ROI % vs. market male rate
 - Gender pay gap visualization against median male equivalent role
 
-Supports saving and comparing up to 3 job offer scenarios side by side.
+**Requirements:**
+- Inputs: base salary (slider), flexibility percentage (slider), employment type
+- Market male rate sourced from MOM Singapore data (updated quarterly)
+- Gender pay parity comparison: highlight gap vs. median male equivalent role
+- Save and compare multiple job offer scenarios
+
+**Acceptance Criteria:**
+- [ ] All calculations update in real time as sliders move
+- [ ] Government subsidy values sourced from live MOM API or quarterly-refreshed static data
+- [ ] Scenario comparison supports up to 3 saved offers
+- [ ] Pay gap visualization uses accessible color contrast ratios
+
+---
+
+## Authentication & User Accounts
+
+**Current state:** No authentication system exists. All data is demo/hardcoded.
+
+**Requirements:**
+- Email/password signup and login
+- Singpass OAuth integration (for Singapore residents — required for Shield Protocol)
+- Session persistence via Supabase Auth
+- Profile: name, role, industry, skills, caregiving status (optional), notification preferences
+- Data isolation: each user's reports, portfolio, wallet scenarios are private by default
+
+**Acceptance Criteria:**
+- [ ] Signup flow completable in under 2 minutes
+- [ ] Singpass OAuth available as alternative login
+- [ ] All user-generated data scoped to authenticated user ID
+- [ ] Password reset via email
 
 ---
 
@@ -247,53 +393,94 @@ VITE_ANTHROPIC_API_KEY=your_anthropic_api_key
 
 ---
 
-## Product Requirements Document
+## Backend & Data
 
-The full PRD is available in [`PRD.md`](./PRD.md). Summary below.
+### Data Sources
 
-### Target Users
+| Data | Source | Refresh Cadence |
+|---|---|---|
+| Job listings | Partner ATSs + manual curation | Real-time / daily sync |
+| Safe-Flex scores | AI analysis + incident feed | On-demand + nightly batch |
+| Singapore subsidies | MOM Singapore API | Quarterly |
+| Gender pay gap market rate | MOM Singapore / Comprehensive Labour Force Survey | Quarterly |
+| Incident reports | User submissions (encrypted) | Real-time |
 
-| Segment | Primary Pain Point |
-|---|---|
-| Active job seekers | Can't assess workplace culture before joining |
-| Career returners | Resume gaps stigmatized; caregiving experience undervalued |
-| Job sharers | Senior roles incompatible with caregiving schedules |
-| Incident reporters | Fear of retaliation prevents reporting misconduct |
+### Privacy & Compliance
 
-### Non-Functional Requirements
+- Shield Protocol reports: zero-knowledge encryption, no PII stored post-verification
+- Personal data handling compliant with Singapore **PDPA** (Personal Data Protection Act)
+- Data retention policy: user data deleted within 30 days of account deletion request
+- All API endpoints require authenticated session (except public job board read)
+
+---
+
+## Non-Functional Requirements
 
 | Requirement | Target |
 |---|---|
 | Page load (LCP) | < 2.5s on 4G mobile |
-| API response (p95) | < 500ms |
-| Score update latency | < 24h after triggering event |
-| AI transformation latency | < 3s |
+| API response time (p95) | < 500ms |
+| Safe-Flex score update latency | < 24h after triggering event |
+| Amplify transformation latency | < 3s |
 | Uptime | 99.5% monthly |
 | Accessibility | WCAG 2.1 AA |
-| Security | OWASP Top 10 mitigated |
+| Mobile responsiveness | iOS Safari 15+, Android Chrome 100+ |
+| Security | OWASP Top 10 mitigated; annual penetration test |
 | Privacy | Singapore PDPA compliant |
 
-### Roadmap
+---
 
-| Milestone | Scope | Target |
+## Out of Scope (v1.0)
+
+The following are explicitly deferred and will not ship in the initial version:
+
+- Employer-facing dashboard (company profile management, score improvement tools)
+- Direct messaging between users (outside Flex-Match partners)
+- Salary negotiation coach
+- Community forums / peer support groups
+- Integration with LinkedIn or other external career platforms
+- Multi-country expansion (outside Singapore)
+
+---
+
+## Roadmap
+
+| Milestone | Scope | Target Date |
 |---|---|---|
 | M1 — Auth & Data Foundation | Supabase auth, real job data pipeline, user profiles | Q2 2026 |
-| M2 — Live Safe-Flex Scoring | AI scoring pipeline on real listings | Q3 2026 |
-| M3 — Shield Protocol v1 | Encrypted reporting, Singpass, collective action | Q3 2026 |
-| M4 — Amplify + Wallet | Live AI transformation, real MOM subsidy data | Q4 2026 |
-| M5 — Flex-Match MVP | AI matching, schedule coordination, messaging | Q4 2026 |
+| M2 — Live Safe-Flex Scoring | AI scoring pipeline connected to real job listings | Q3 2026 |
+| M3 — Shield Protocol v1 | Encrypted reporting, Singpass integration, collective action | Q3 2026 |
+| M4 — Amplify + Wallet | Live AI transformation API, real MOM subsidy data | Q4 2026 |
+| M5 — Flex-Match MVP | Profile creation, AI matching, messaging | Q4 2026 |
 | M6 — Public Launch | All features live, analytics, performance tuning | Q1 2027 |
 
-### Success Metrics (6 months post-launch)
+---
+
+## Success Metrics
+
+Targets at 6 months post-launch:
 
 | Metric | Target |
 |---|---|
 | Registered users | 5,000 |
-| Weekly job browsing sessions | 20,000 |
-| Shield Protocol reports | 500 |
+| Jobs browsed / week | 20,000 sessions |
+| Shield Protocol reports filed | 500 |
+| Collective actions triggered | 10 |
 | Flex-Match pairs created | 200 |
 | Amplify portfolios generated | 1,000 |
+| Wallet scenarios saved | 2,000 |
 | D30 retention | ≥ 35% |
+
+---
+
+## Open Questions
+
+1. **Singpass integration complexity:** What is the approval timeline for Singpass OAuth access for a private platform?
+2. **AI model selection:** Use Claude API for all AI features, or specialized models per task (NLP for scoring, LLM for transformation)?
+3. **Job listing sourcing:** Partner ATS integrations vs. manual curation — what's the realistic pipeline for launch?
+4. **Zero-knowledge proof implementation:** Use existing ZKP libraries (e.g., snarkjs) or a managed service?
+5. **Monetization model:** Free for users; employer-facing paid tier? Subscription? Grant-funded?
+6. **Legal review:** Collective action triggers and employer flagging — any defamation risk under Singapore law?
 
 ---
 
